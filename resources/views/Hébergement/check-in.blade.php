@@ -1,4 +1,8 @@
 <x-app-layout>
+    <!-- Add SweetAlert2 CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
     <!-- Ajout des styles personnalisés pour le calendrier -->
     <style>
         .fc {
@@ -91,7 +95,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-10">
                 <h1 class="text-3xl font-bold text-center mb-8 text-blue-900">Réservation</h1>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -105,6 +109,7 @@
                     <div class="p-6 bg-white rounded-lg shadow-sm flex items-center">
                         <form id="reservationForm" class="space-y-6 w-full" method="POST">
                             @csrf
+                            <input type="hidden" name="property_id" value="{{ $property->id }}">
                             <h2 class="text-xl font-semibold mb-4">Informations personnelles</h2>
                             <input id="check_in" type="hidden" name="check_in" value="">
                             <input id="check_out" type="hidden" name="check_out" value="">
@@ -113,17 +118,24 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Nom complet</label>
-                                    <input type="text" name="full_name" required
+                                    <input type="text" name="full_name" required value="{{ $user->name }}"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Email</label>
-                                    <input type="email" name="email" required
+                                    <input type="email" name="email" required value="{{ $user->email }}"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Téléphone</label>
                                     <input type="tel" name="phone" required
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                                <!-- After the phone input field, add the guests input -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Nombre de voyageurs</label>
+                                    <input type="number" name="guests" id="guests" required min="1" max="{{ $property->max_guests }}"
+                                        value="1"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                             </div>
@@ -153,7 +165,19 @@
                 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/fr.min.js"></script>
                 <script>
                     document.addEventListener('DOMContentLoaded', function () {
-                        const PRICE_PER_NIGHT = 100; // Prix par nuit en euros
+                        const PRICE_PER_NIGHT = {{ $property->price }}; // Get price from property
+                        
+                        // Add this function to recalculate total when guests change
+                        function updateTotal() {
+                            const nights = document.getElementById('nightsCount').textContent.split(':')[1].trim().split(' ')[0];
+                            if (nights !== '-') {
+                                const total = nights * PRICE_PER_NIGHT;
+                                document.getElementById('totalPrice').textContent = `Total: ${total} €`;
+                            }
+                        }
+
+                        // Add event listener for guests input
+                        document.getElementById('guests').addEventListener('change', updateTotal);
 
                         const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                             initialView: 'dayGridMonth',
@@ -187,18 +211,19 @@
                                 const startDate = new Date(info.start);
                                 const endDate = new Date(info.end);
                                 const nights = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+                                const guests = document.getElementById('guests').value;
 
                                 document.getElementById('check_in').value = info.startStr;
                                 document.getElementById('check_out').value = info.endStr;
                                 document.getElementById('selectedDates').textContent =
                                     `Dates: ${startDate.toLocaleDateString('fr-FR')} - ${endDate.toLocaleDateString('fr-FR')}`;
                                 document.getElementById('nightsCount').textContent = `Durée: ${nights} nuits`;
-                                document.getElementById('totalPrice').textContent = `Total: ${nights * PRICE_PER_NIGHT} €`;
+                                document.getElementById('totalPrice').textContent = `Total: ${nights * PRICE_PER_NIGHT * guests} €`;
                             },
-                            events: '/api/reservations', // Endpoint pour récupérer les réservations existantes
+                            events: `/reservations?property_id={{ $property->id }}`, // Endpoint pour récupérer les réservations existantes
                             eventContent: function (arg) {
                                 return {
-                                    html: `<div class="p-1 text-xs">${arg.event.title}</div>`
+                                    html: `<div class="p-1 text-xs bg-red-500 text-white rounded">${arg.event.title}</div>`
                                 };
                             }
                         });
@@ -214,7 +239,7 @@
 
                             try {
                                 const formData = new FormData(event.target);
-                                const response = await fetch('/api/reservations', {
+                                const response = await fetch('/reservations', {
                                     method: 'POST',
                                     body: formData,
                                     headers: {
@@ -222,24 +247,47 @@
                                     }
                                 });
 
-                                if (!response.ok) throw new Error('Erreur lors de la réservation');
-
-                                // Succès
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Réservation confirmée !',
-                                    text: 'Vous recevrez un email de confirmation sous peu.',
-                                    showConfirmButton: false,
-                                    timer: 3000
-                                });
-
-                                setTimeout(() => window.location.href = '/reservations', 3000);
-
+                                // First check if the response is JSON
+                                const contentType = response.headers.get('content-type');
+                                if (contentType && contentType.includes('application/json')) {
+                                    const result = await response.json();
+                                    console.log(result);
+                                    
+                                    if (!response.ok) {
+                                        throw new Error(result.message || 'Erreur lors de la réservation');
+                                    }
+                                    
+                                    // Success case
+                                    await Swal.fire({
+                                        icon: 'success',
+                                        title: 'Réservation confirmée !',
+                                        text: 'Vous recevrez un email de confirmation sous peu.',
+                                        showConfirmButton: false,
+                                        timer: 3000
+                                    });
+                                    
+                                    window.location.href = '/reservation/' + result.id;
+                                } else {
+                                    // If response is not JSON, get the text content
+                                    const textResponse = await response.text();
+                                    
+                                    // Display error with the actual error message
+                                    await Swal.fire({
+                                        icon: 'error',
+                                        title: 'Erreur',
+                                        text: 'Une erreur est survenue lors de la réservation.',
+                                        html: textResponse // This will display the HTML error message in a formatted way
+                                    });
+                                    
+                                    button.disabled = false;
+                                    button.innerHTML = '<span class="inline-flex items-center"><i class="fas fa-check mr-2"></i>Confirmer la réservation</span>';
+                                }
                             } catch (error) {
-                                Swal.fire({
+                                // console.log(error);
+                                await Swal.fire({
                                     icon: 'error',
                                     title: 'Erreur',
-                                    text: 'Une erreur est survenue. Veuillez réessayer.',
+                                    text: error.message || 'Une erreur est survenue. Veuillez réessayer.',
                                 });
                                 button.disabled = false;
                                 button.innerHTML = '<span class="inline-flex items-center"><i class="fas fa-check mr-2"></i>Confirmer la réservation</span>';

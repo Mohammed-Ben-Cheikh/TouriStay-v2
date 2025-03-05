@@ -16,7 +16,11 @@ return new class extends Migration
             $table->date('check_out');
             $table->integer('guests');
             $table->decimal('total_price', 10, 2);
-            $table->enum('status',['confirmed','pending'])->default('pending');
+            $table->enum('status', ['confirmed', 'pending'])->default('pending');
+            $table->string('payment_id')->nullable();
+            $table->string('guest_name');
+            $table->string('guest_email');
+            $table->string('guest_phone');
             $table->timestamps();
         });
     }

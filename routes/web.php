@@ -23,6 +23,12 @@ Route::middleware([
     Route::post('/favorites/{property}', [FavoriteController::class, 'toggleFavorite'])->name('favorites.toggle');
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::get('/check-in/{property}', [bookingController::class, 'index'])->name('check-in');
+    Route::post('/reservations', [BookingController::class, 'store']);
+    Route::get('/reservations', [BookingController::class, 'getReservations']);
+    Route::get('/reservation/{reservation}', [BookingController::class, 'reservationIndex']);
+    Route::get('/booking', [BookingController::class, 'getBooking']);
+    Route::get('/reservation/confirmation/', [BookingController::class, 'showConfirmation'])->name('booking.confirmation');
+    
     // tourist routes
     Route::middleware(['isTourist'])->group(function () {
         Route::get('/become-an-owner', [OwnerController::class, 'welcome'])->name('become-an-owner');
