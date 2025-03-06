@@ -122,25 +122,56 @@ class BookingController
     public function getReservations(Request $request)
     {
         try {
+            // Récupérer l'ID de la propriété depuis la requête
             $propertyId = $request->query('property_id');
-            $bookings = Booking::where('property_id', $propertyId)
-                ->where('status', 'confirmed')
-                ->get();
 
-            $events = $bookings->map(function ($booking) {
-                return [
-                    'id' => $booking->id,
-                    'title' => 'Réservé', // Or you could use the guest name if needed
-                    'start' => $booking->check_in->format('Y-m-d'),
-                    'end' => $booking->check_out->format('Y-m-d'),
-                    'backgroundColor' => '#EF4444', // Red color for reserved dates
-                    'borderColor' => '#DC2626',
-                    'display' => 'block',
-                    'overlap' => false
-                ];
-            });
+            // Validation de l'ID de la propriété
+            if (!$propertyId) {
+                return response()->json(['error' => 'Property ID is required'], 400);
+            }
 
-            return response()->json($events);
+            // Récupérer la propriété ou échouer avec 404
+            $property = Property::findOrFail($propertyId);
+
+            // Récupérer le paramètre 'check' pour déterminer la réponse
+            $check = $request->query('check');
+
+            if ($check === 'availability') {
+                return response()->json([
+                    'available_until' => $property->available_until ? $property->available_until->format('Y-m-d') : null,
+                ], 200);
+            } elseif ($check === 'bookingData') {
+                // Récupérer les réservations confirmées
+                $bookings = Booking::where('property_id', $propertyId)
+                    ->where('status', 'confirmed')
+                    ->get();
+
+                // Transformer les réservations en événements
+                $events = $bookings->map(function ($booking) use ($property) {
+                    return [
+                        'id' => $booking->id,
+                        'title' => 'Réservé', // Option : $booking->guest_name ? "Réservé par {$booking->guest_name}" : 'Réservé'
+                        'start' => $booking->check_in->format('Y-m-d'),
+                        'end' => $booking->check_out->format('Y-m-d'),
+                        'backgroundColor' => '#EF4444',
+                        'borderColor' => '#DC2626',
+                        'display' => 'block',
+                        'overlap' => false,
+                        'available_until' => $property->available_until ? $property->available_until->format('Y-m-d') : null,
+                    ];
+                });
+
+                return response()->json($events, 200);
+            }
+
+            // Si 'check' n'est ni 'availability' ni 'bookingData'
+            return response()->json(['error' => 'Invalid check parameter. Use "availability" or "bookingData"'], 400);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'error' => 'Property not found',
+                'message' => $e->getMessage()
+            ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error fetching reservations',
@@ -262,5 +293,18 @@ class BookingController
                 'message' => 'Une erreur inattendue est survenue: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function réservationIndex()
+    {
+        $reservations = Booking::where('user_id', Auth::id())->get();
+        // dd($reservations);
+        return view('réservation.index', compact('reservations'));
+    }
+
+    public function showConfirmation($id)
+    {
+        $reservation = Booking::where('id', '=', $id)->get();
+        return view('Hébergement.confirmation', compact('reservation'));
     }
 }

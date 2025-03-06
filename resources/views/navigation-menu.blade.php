@@ -93,6 +93,12 @@
                                 <x-dropdown-link href="{{ route('favorites.index') }}">
                                     {{ __('Mes Favorites') }}
                                 </x-dropdown-link>
+
+                                <div class="border-t border-gray-200"></div>
+
+                                <x-dropdown-link href="{{ route('MesRéservation') }}">
+                                    {{ __('Mes Réservation') }}
+                                </x-dropdown-link>
                                 
                                 <div class="border-t border-gray-200"></div>
 

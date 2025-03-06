@@ -27,7 +27,9 @@ Route::middleware([
     Route::get('/reservations', [BookingController::class, 'getReservations']);
     Route::get('/reservation/{reservation}', [BookingController::class, 'reservationIndex']);
     Route::get('/booking', [BookingController::class, 'getBooking']);
-    Route::get('/reservation/confirmation/', [BookingController::class, 'showConfirmation'])->name('booking.confirmation');
+    Route::get('/reservation/confirmation/{reservation}', [BookingController::class, 'showConfirmation'])->name('booking.confirmation');
+    Route::get('/MesRéservation', [BookingController::class, 'réservationIndex'])->name('MesRéservation');
+    Route::get('/booking/download-pdf/{id}', [BookingController::class, 'downloadPdf'])->name('booking.download-pdf');
     
     // tourist routes
     Route::middleware(['isTourist'])->group(function () {
@@ -44,6 +46,7 @@ Route::middleware([
         Route::put('/hébergement/{hébergement}', [PropertyController::class, 'update'])->name('hébergements.update');
         Route::delete('/hébergement/{hébergement}', [PropertyController::class, 'destroy'])->name('hébergements.destroy');
         Route::get('/owner/dashboard', [OwnerController::class, 'dashboard'])->name('owner.dashboard');
+        Route::get('/owner/reservations', [OwnerController::class, 'reservations'])->name('reservations.index');
     });
 
 

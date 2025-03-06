@@ -195,10 +195,11 @@
                             eventClassNames: 'text-xs px-1 py-0.5',
                             selectConstraint: {
                                 start: new Date(),
-                                end: '2025-01-01'
+                                end: '{{ $property->available_until ? $property->available_until->format('Y-m-d') : null }}'
                             },
                             validRange: {
-                                start: new Date()
+                                start: new Date(),
+                                end: '{{ $property->available_until ? $property->available_until->format('Y-m-d') : null }}' // Endpoint pour vérifier la disponibilité
                             },
                             selectOverlap: false,
                             eventOverlap: false,
@@ -220,7 +221,7 @@
                                 document.getElementById('nightsCount').textContent = `Durée: ${nights} nuits`;
                                 document.getElementById('totalPrice').textContent = `Total: ${nights * PRICE_PER_NIGHT * guests} €`;
                             },
-                            events: `/reservations?property_id={{ $property->id }}`, // Endpoint pour récupérer les réservations existantes
+                            events: `/reservations?check=bookingData&&property_id={{ $property->id }}`, // Endpoint pour récupérer les réservations existantes
                             eventContent: function (arg) {
                                 return {
                                     html: `<div class="p-1 text-xs bg-red-500 text-white rounded">${arg.event.title}</div>`

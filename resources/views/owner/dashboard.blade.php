@@ -12,7 +12,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
@@ -86,7 +86,7 @@
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
-                                                    @if($property->primaryImage->image_url)
+                                                    @if($property->primaryImage?->image_url)
                                                         <img class="h-10 w-10 rounded-full object-cover" src="{{ Storage::url($property->primaryImage->image_url) }}" alt="">
                                                     @endif
                                                     <div class="ml-4">
@@ -113,6 +113,7 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <a href="{{ route('hébergements.show', $property->id) }}" class="text-blue-600 hover:text-blue-900">Voir</a>
                                                 <a href="{{ route('hébergements.edit', $property->id) }}" class="text-yellow-600 hover:text-yellow-900 ml-4">Modifier</a>
+                                                <a href="{{ route('reservations.index', ['property_id' => $property->id]) }}" class="text-indigo-600 hover:text-indigo-900 ml-4">Réservations</a>
                                                 <form action="{{ route('hébergements.destroy', $property->id) }}" method="POST" class="inline-block ml-4">
                                                     @csrf
                                                     @method('DELETE')
