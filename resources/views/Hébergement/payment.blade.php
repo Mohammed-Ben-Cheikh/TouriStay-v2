@@ -274,7 +274,7 @@
                     }
 
                     if (result.status === 'success') {
-                        window.location.href = `/booking/confirmation/${this.bookingId}`;
+                        window.location.href = `/reservation/confirmation/${this.bookingId}`;
                     } else {
                         throw new Error(result.message || 'Le paiement a échoué');
                     }

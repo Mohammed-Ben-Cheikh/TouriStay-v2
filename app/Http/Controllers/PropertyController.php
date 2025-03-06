@@ -15,6 +15,7 @@ class PropertyController
 
     public function index(Request $request)
     {
+        $paginato = $request->input("numPagination",5);
         $citiesByCountry = Pays::with('villes')
             ->get()
             ->mapWithKeys(function ($country) {
@@ -85,8 +86,7 @@ class PropertyController
 
         // Get authenticated user
         $user = auth()->user();
-
-        $apartments = $query->paginate(6)
+        $apartments = $query->paginate($paginato)
             ->through(function ($property) use ($user) {
                 // Add isFavorited property
                 $property->isFavorited = $user ? $user->favorites()->where('property_id', $property->id)->exists() : false;

@@ -238,7 +238,7 @@ class BookingController
                     'payment_method' => $validated['payment_method_id'],
                     'confirmation_method' => 'manual',
                     'confirm' => true,
-                    'return_url' => route('booking.confirmation', ['id' => $booking->id]), // Solution 2 (optionnelle)
+                    'return_url' => route('booking.confirmation', $booking->id), // Solution 2 (optionnelle)
                     // 'automatic_payment_methods' => [
                     //     'enabled' => true,
                     //     'allow_redirects' => 'never' // Solution 1 : empêche les redirections

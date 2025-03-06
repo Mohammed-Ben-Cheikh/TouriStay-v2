@@ -19,13 +19,14 @@ Route::middleware([
     Route::get('/home', [TouristController::class,'index'])->name('home');
     Route::get('/blogs', function () {return view('blogs');})->name('blogs');
     Route::get('/hébergements', [PropertyController::class, 'index'])->name('hébergements.index');
+    Route::post('/hébergements', [PropertyController::class, 'index'])->name('hébergements.index');
     Route::get('/hébergements/{hébergement}', [PropertyController::class, 'show'])->name('hébergements.show');
     Route::post('/favorites/{property}', [FavoriteController::class, 'toggleFavorite'])->name('favorites.toggle');
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::get('/check-in/{property}', [bookingController::class, 'index'])->name('check-in');
     Route::post('/reservations', [BookingController::class, 'store']);
     Route::get('/reservations', [BookingController::class, 'getReservations']);
-    Route::get('/reservation/{reservation}', [BookingController::class, 'reservationIndex']);
+    Route::get('/reservation/{reservation}', [BookingController::class, 'reservationIndex'])->name('payment.process');
     Route::get('/booking', [BookingController::class, 'getBooking']);
     Route::get('/reservation/confirmation/{reservation}', [BookingController::class, 'showConfirmation'])->name('booking.confirmation');
     Route::get('/MesRéservation', [BookingController::class, 'réservationIndex'])->name('MesRéservation');
