@@ -57,7 +57,7 @@
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-semibold text-gray-900">Vos Propriétés Récentes</h2>
-                        <a href="{{ route('hébergements.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        <a href="{{ route('admin.hébergements.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
                             Ajouter une propriété
                         </a>
                     </div>
@@ -112,7 +112,8 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <a href="{{ route('hébergements.show', $property->id) }}" class="text-blue-600 hover:text-blue-900">Voir</a>
-                                                <a href="{{ route('hébergements.edit', $property->id) }}" class="text-yellow-600 hover:text-yellow-900 ml-4">Modifier</a>
+                                                <a href="{{ route('admin.hébergements.edit', $property->id) }}" class="text-yellow-600 hover:text-yellow-900 ml-4">Modifier</a>
+                                                <a href="{{ route('admin.reservations.index',  $property->id) }}" class="text-indigo-600 hover:text-indigo-900 ml-4">Réservations</a>
                                                 <form action="{{ route('admin.hébergements.destroy', $property->id) }}" method="POST" class="inline-block ml-4">
                                                     @csrf
                                                     @method('DELETE')
@@ -127,7 +128,7 @@
                     @else
                         <div class="text-center py-12">
                             <p class="text-gray-500">Vous n'avez pas encore de propriétés.</p>
-                            <a href="{{ route('hébergements.create') }}" class="mt-4 inline-block text-blue-600 hover:text-blue-800">
+                            <a href="{{ route('admin.hébergements.create') }}" class="mt-4 inline-block text-blue-600 hover:text-blue-800">
                                 Commencer par ajouter une propriété
                             </a>
                         </div>

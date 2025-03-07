@@ -10,6 +10,7 @@ use App\Models\Booking;
 use App\Models\Property;
 use Stripe\PaymentIntent;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Stripe\Exception\ApiErrorException;
@@ -304,7 +305,46 @@ class BookingController
 
     public function showConfirmation($id)
     {
-        $reservation = Booking::where('id', '=', $id)->get();
-        return view('Hébergement.confirmation', compact('reservation'));
+        return view('Hébergement.confirmation');
+    }
+
+    public function confirmationData($id)
+    {
+        $user = Auth::user();
+        $reservation = Booking::findOrFail($id);
+        $property = Property::with('primaryImage')->findOrFail($reservation->property_id);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'avatar' => auth()->user()->profile_photo_url // Adjust if your User model has a different field
+                ],
+                'reservation' => $reservation,
+                'property' => $property
+            ]
+        ]);
+    }
+
+    public function downloadPdf($id)
+    {
+        $booking = Booking::findOrFail($id);
+        $property = Property::with('primaryImage')->findOrFail($booking->property_id);
+        $user = User::findOrFail($booking->user_id);
+
+        $data = [
+            'booking' => $booking,
+            'property' => $property,
+            'user' => $user,
+            'date' => Carbon::now()->format('d/m/Y')
+        ];
+        // dd($data);
+
+        $pdf = PDF::loadView('pdf.booking', $data);
+
+        return $pdf->download('reservation-' . $booking->id . '.pdf');
     }
 }

@@ -2,11 +2,12 @@
 
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OwnerController;
+use App\Http\Controllers\bookingController;
 use App\Http\Controllers\TouristController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\PropertyController;
-use App\Http\Controllers\bookingController;
 
 Route::middleware([
     'auth:sanctum',
@@ -29,6 +30,7 @@ Route::middleware([
     Route::get('/reservation/{reservation}', [BookingController::class, 'reservationIndex'])->name('payment.process');
     Route::get('/booking', [BookingController::class, 'getBooking']);
     Route::get('/reservation/confirmation/{reservation}', [BookingController::class, 'showConfirmation'])->name('booking.confirmation');
+    Route::get('/booking/{id}/confirmation', [BookingController::class, 'confirmationData']);
     Route::get('/MesRéservation', [BookingController::class, 'réservationIndex'])->name('MesRéservation');
     Route::get('/booking/download-pdf/{id}', [BookingController::class, 'downloadPdf'])->name('booking.download-pdf');
     
@@ -56,7 +58,15 @@ Route::middleware([
 
     // admin routes
     Route::middleware(['isAdmin'])->group(function () {
-        Route::delete('/admin/hébergement/{hébergement}', [PropertyController::class, 'destroy'])->name('admin.hébergements.destroy');
-        Route::get('/admin/dashboard', [OwnerController::class, 'dashboard'])->name('admin.dashboard');
+        Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+        Route::get('/admin/hébergement/create', [AdminController::class, 'create'])->name('admin.hébergements.create');
+        Route::post('/admin/hébergement/store', [AdminController::class, 'store'])->name('admin.hébergements.store');
+        Route::get('/admin/hébergement/{hébergement}/edit', [AdminController::class, 'edit'])->name('admin.hébergements.edit');
+        Route::put('/admin/hébergement/{hébergement}', [AdminController::class, 'update'])->name('admin.hébergements.update');
+        Route::delete('/admin/hébergement/{hébergement}', [AdminController::class, 'destroy'])->name('admin.hébergements.destroy');
+        Route::get('/admin/reservations', [AdminController::class, 'reservations'])->name('admin.reservations.data');
+        Route::get('/admin/reservations/{hébergement}', [AdminController::class, 'index'])->name('admin.reservations.index');
+        Route::get('/admin/booking/{id}', [AdminController::class, 'getSingleBooking']);
+        Route::get('/admin/reservation/{booking}', [AdminController::class, 'bookingIndex'])->name('admin.booking.index');
     });
 });
