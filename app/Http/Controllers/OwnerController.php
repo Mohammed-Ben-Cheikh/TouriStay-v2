@@ -76,7 +76,6 @@ class OwnerController
         // Structure the response for a single property
         $response = [
             'property' => $property,
-            'bookings' => $property->bookings
         ];
         
         // Return JSON response
@@ -84,5 +83,39 @@ class OwnerController
             'success' => true,
             'data' => $response
         ], 200);
+    }
+
+    public function index()
+    {
+        return view('owner.reservations');
+    }
+
+    public function getSingleBooking($bookingId)
+    {
+        $owner = auth()->user();
+        $booking = $owner->properties()
+            ->with(['bookings' => function ($query) use ($bookingId) {
+                $query->where('id', $bookingId);
+            }])
+            ->get()
+            ->pluck('bookings')
+            ->flatten()
+            ->first();
+            $property = Property::with('primaryImage')->findOrFail($booking->property_id);
+        if (!$booking) {
+            return response()->json(['success' => false, 'message' => 'Booking not found'], 404);
+        }
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'booking' => $booking,
+                'property'=> $property
+            ]
+        ]);
+    }
+
+    public function bookingIndex()
+    {
+        return view('owner.reservation');
     }
 }

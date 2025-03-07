@@ -47,7 +47,10 @@ Route::middleware([
         Route::put('/hébergement/{hébergement}', [PropertyController::class, 'update'])->name('hébergements.update');
         Route::delete('/hébergement/{hébergement}', [PropertyController::class, 'destroy'])->name('hébergements.destroy');
         Route::get('/owner/dashboard', [OwnerController::class, 'dashboard'])->name('owner.dashboard');
-        Route::get('/owner/reservations', [OwnerController::class, 'reservations'])->name('reservations.index');
+        Route::get('/owner/reservations', [OwnerController::class, 'reservations'])->name('reservations.data');
+        Route::get('/owner/reservations/{hébergement}', [OwnerController::class, 'index'])->name('reservations.index');
+        Route::get('/booking/{id}', [OwnerController::class, 'getSingleBooking']);
+        Route::get('/owner/reservation/{booking}', [OwnerController::class, 'bookingIndex'])->name('booking.index');
     });
 
 
